@@ -75,11 +75,14 @@ class ParserTest < Minitest::Test
     assert_equal 2, webvtt.cues.length
   end
 
-  def test_ignore_if_note
+  def test_include_notes
     webvtt = WebVTT.read("tests/subtitles/withnote.vtt")
-    assert_equal 3, webvtt.cues.size
+    assert_equal 4, webvtt.cues.size
     # ignoring the first cue which is a NOTE
     assert_equal "1", webvtt.cues[0].identifier
+    assert_equal "This translation was done by Kyle so that\nsome friends can watch it with their parents.", webvtt.cues[0].note
+    assert_equal "This last line may not translate well.", webvtt.cues[2].note
+    assert_nil webvtt.cues[3].note
   end
 
   def test_timestamp_in_sec

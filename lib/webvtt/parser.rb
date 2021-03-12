@@ -70,10 +70,15 @@ module WebVTT
       end
 
       @cues = []
+      last_note = nil
       cues.each do |cue|
         cue_parsed = Cue.parse(cue.strip)
         if !cue_parsed.text.nil?
           @cues << cue_parsed
+          @cues.last.note = last_note
+          last_note = nil
+        elsif !cue_parsed.note.nil?
+          last_note = cue_parsed.note
         end
       end
       @cues
@@ -104,7 +109,7 @@ module WebVTT
   end
 
   class Cue
-    attr_accessor :identifier, :start, :end, :style, :text
+    attr_accessor :identifier, :start, :end, :style, :text, :note
 
     def initialize(cue = nil)
       @content = cue
@@ -156,8 +161,11 @@ module WebVTT
     def parse
       lines = @content.split("\n").map(&:strip)
 
-      # it's a note, ignore
-      return if lines[0] =~ /NOTE/
+      # it's a note, capture it
+      if lines[0] =~ /^NOTE/
+        @note = lines[0].gsub(/^NOTE\s*/, "") + lines[1..-1].join("\n")
+        return
+      end
 
       if !lines[0].include?("-->")
         @identifier = lines[0]
